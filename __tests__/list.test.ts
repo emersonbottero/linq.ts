@@ -1,6 +1,7 @@
-import test from 'ava'
+import { assert, expect, expectTypeOf, test } from 'vitest'
 
 import List from '../src/list'
+/* #region test setup */
 
 interface IPackage {
   Company: string
@@ -68,7 +69,7 @@ class Dog extends Pet {
 }
 
 class PetOwner {
-  constructor(public Name: string, public Pets: List<Pet>) { }
+  constructor(public Name: string, public Pets: List<Pet>) {}
 }
 
 class Product implements IProduct {
@@ -81,37 +82,39 @@ class Product implements IProduct {
   }
 }
 
-test('Add', t => {
+/* #endregion */
+
+test('Add', () => {
   const list = new List<string>()
   list.Add('hey')
-  t.is(list.First(), 'hey')
+  expect(list.First()).toBe('hey')
 })
 
-test('Append', t => {
+test('Append', () => {
   const list = new List<string>()
   list.AddRange(['hey', "what's", 'up'])
   list.Append('there')
-  t.is(list.Last(), 'there')
+  expect(list.Last()).toBe('there')
 })
 
-test('Prepend', t => {
+test('Prepend', () => {
   const list = new List<string>()
   list.AddRange(['hey', "what's", 'up'])
   list.Prepend('there')
-  t.is(list.First(), 'there')
+  expect(list.First()).toBe('there')
 })
 
-test('AddRange', t => {
+test('AddRange', () => {
   const list = new List<string>()
   list.AddRange(['hey', "what's", 'up'])
-  t.deepEqual(list.ToArray(), ['hey', "what's", 'up'])
+  expect(list.ToArray()).toStrictEqual(['hey', "what's", 'up'])
 })
 
-test('Aggregate', t => {
+test('Aggregate', () => {
   const sentence = 'the quick brown fox jumps over the lazy dog'
   const reversed = 'dog lazy the over jumps fox brown quick the '
   const words = new List<string>(sentence.split(' '))
-  t.is(
+  assert(
     words.Aggregate(
       (workingSentence, next) => next + ' ' + workingSentence,
       ''
@@ -120,7 +123,7 @@ test('Aggregate', t => {
   )
 })
 
-test('All', t => {
+test('All', () => {
   const pets = new List<Pet>([
     new Pet({ Age: 10, Name: 'Barley' }),
     new Pet({ Age: 4, Name: 'Boots' }),
@@ -129,10 +132,10 @@ test('All', t => {
 
   // determine whether all pet names
   // in the array start with 'B'.
-  t.false(pets.All(pet => pet.Name.startsWith('B')))
+  expect(pets.All(pet => pet.Name.startsWith('B'))).toBeFalsy()
 })
 
-test('Any', t => {
+test('Any', () => {
   const pets = new List<Pet>([
     new Pet({ Age: 8, Name: 'Barley', Vaccinated: true }),
     new Pet({ Age: 4, Name: 'Boots', Vaccinated: false }),
@@ -140,22 +143,22 @@ test('Any', t => {
   ])
 
   // determine whether any pets over age 1 are also unvaccinated.
-  t.true(pets.Any(p => p.Age > 1 && p.Vaccinated === false))
-  t.true(pets.Any())
+  expect(pets.Any(p => p.Age > 1 && p.Vaccinated === false)).toBeTruthy()
+  expect(pets.Any()).toBeTruthy()
 })
 
-test('Average', t => {
+test('Average', () => {
   const grades = new List<number>([78, 92, 100, 37, 81])
   const people = new List<IPerson>([
     { Age: 15, Name: 'Cathy' },
     { Age: 25, Name: 'Alice' },
     { Age: 50, Name: 'Bob' }
   ])
-  t.is(grades.Average(), 77.6)
-  t.is(people.Average(x => x.Age), 30)
+  expect(grades.Average()).toBe(77.6)
+  expect(people.Average(x => x.Age)).toBe(30)
 })
 
-test('Cast', t => {
+test('Cast', () => {
   const pets = new List<Pet>([
     new Dog({ Age: 8, Name: 'Barley', Vaccinated: true }),
     new Pet({ Age: 1, Name: 'Whiskers', Vaccinated: false })
@@ -163,23 +166,23 @@ test('Cast', t => {
 
   const dogs = pets.Cast<Dog>()
 
-  t.true(typeof dogs.First().Speak === 'function')
-  t.is(dogs.First().Speak(), 'Bark')
-  t.true(typeof dogs.Last().Speak === 'undefined')
+  expectTypeOf(dogs.First().Speak).toBeFunction()
+  expect(dogs.First().Speak()).toBe('Bark')
+  expect(dogs.Last().Speak).toBeUndefined()
 })
 
-test('Clear', t => {
+test('Clear', () => {
   const pets = new List<Pet>([
     new Dog({ Age: 8, Name: 'Barley', Vaccinated: true }),
     new Pet({ Age: 1, Name: 'Whiskers', Vaccinated: false })
   ])
 
-  t.is(pets.Count(), 2)
+  expect(pets.Count()).toBe(2)
   pets.Clear()
-  t.is(pets.Count(), 0)
+  expect(pets.Count()).toBe(0)
 })
 
-test('Concat', t => {
+test('Concat', () => {
   const cats = new List<Pet>([
     new Pet({ Age: 8, Name: 'Barley' }),
     new Pet({ Age: 4, Name: 'Boots' }),
@@ -191,16 +194,15 @@ test('Concat', t => {
     new Pet({ Age: 9, Name: 'Fido' })
   ])
   const expected = ['Barley', 'Boots', 'Whiskers', 'Bounder', 'Snoopy', 'Fido']
-  t.deepEqual(
+  expect(
     cats
       .Select(cat => cat.Name)
       .Concat(dogs.Select(dog => dog.Name))
-      .ToArray(),
-    expected
-  )
+      .ToArray()
+  ).toStrictEqual(expected)
 })
 
-test('Contains', t => {
+test('Contains', () => {
   const fruits = new List<string>([
     'apple',
     'banana',
@@ -209,10 +211,10 @@ test('Contains', t => {
     'passionfruit',
     'grape'
   ])
-  t.true(fruits.Contains('mango'))
+  expect(fruits.Contains('mango')).toBeTruthy()
 })
 
-test('Count', t => {
+test('Count', () => {
   const fruits = new List<string>([
     'apple',
     'banana',
@@ -221,28 +223,27 @@ test('Count', t => {
     'passionfruit',
     'grape'
   ])
-  t.is(fruits.Count(), 6)
-  t.is(fruits.Count(x => x.length > 5), 3)
+  expect(fruits.Count()).toBe(6)
+  expect(fruits.Count(x => x.length > 5)).toBe(3)
 })
 
-test('DefaultIfEmpty', t => {
+test('DefaultIfEmpty', () => {
   const pets = new List<Pet>([
     new Pet({ Age: 8, Name: 'Barley' }),
     new Pet({ Age: 4, Name: 'Boots' }),
     new Pet({ Age: 1, Name: 'Whiskers' })
   ])
-  t.deepEqual(
+  expect(
     pets
       .DefaultIfEmpty()
       .Select(pet => pet.Name)
-      .ToArray(),
-    ['Barley', 'Boots', 'Whiskers']
-  )
+      .ToArray()
+  ).toStrictEqual(['Barley', 'Boots', 'Whiskers'])
   const numbers = new List<number>()
-  t.deepEqual(numbers.DefaultIfEmpty(0).ToArray(), [0])
+  expect(numbers.DefaultIfEmpty(0).ToArray()).toStrictEqual([0])
 })
 
-test('Distinct', t => {
+test('Distinct', () => {
   const ages = new List<number>([21, 46, 46, 55, 17, 21, 55, 55])
   const pets = new List<Pet>([
     new Pet({ Age: 1, Name: 'Whiskers' }),
@@ -256,11 +257,13 @@ test('Distinct', t => {
     new Pet({ Age: 8, Name: 'Barley' }),
     new Pet({ Age: 9, Name: 'Corey' })
   ])
-  t.deepEqual(ages.Distinct(), new List<number>([21, 46, 55, 17]))
-  t.deepEqual(pets.Distinct(), expected)
+  expect(ages.Distinct()).toStrictEqual(
+    new List<number>([21, 46, 55, 17])
+  )
+  expect(pets.Distinct()).toStrictEqual(expected)
 })
 
-test('DistinctBy', t => {
+test('DistinctBy', () => {
   const pets = new List<Pet>([
     new Pet({ Age: 1, Name: 'Whiskers' }),
     new Pet({ Age: 4, Name: 'Boots' }),
@@ -274,58 +277,61 @@ test('DistinctBy', t => {
     new Pet({ Age: 8, Name: 'Barley' })
   ])
 
-  t.deepEqual(pets.DistinctBy(pet => pet.Age), result)
+  expect(pets.DistinctBy(pet => pet.Age)).toStrictEqual(result)
 })
 
-test('ElementAt', t => {
+test('ElementAt', () => {
   const a = new List<string>(['hey', 'hola', 'que', 'tal'])
-  t.is(a.ElementAt(0), 'hey')
-  t.throws(
-    () => a.ElementAt(4),
-    /ArgumentOutOfRangeException: index is less than 0 or greater than or equal to the number of elements in source./
+  expect(a.ElementAt(0)).toBe('hey')
+  expect(() => a.ElementAt(4)).toThrowError(
+    'ArgumentOutOfRangeException: index is less than 0 or greater than or equal to the number of elements in source.'
   )
-  t.throws(
-    () => a.ElementAt(-1),
-    /ArgumentOutOfRangeException: index is less than 0 or greater than or equal to the number of elements in source./
+  expect(() => a.ElementAt(-1)).toThrowError(
+    'ArgumentOutOfRangeException: index is less than 0 or greater than or equal to the number of elements in source.'
   )
 })
 
-test('ElementAtOrDefault', t => {
+test('ElementAtOrDefault', () => {
   const a = new List<string>(['hey', 'hola', 'que', 'tal'])
   const b = new List<number>([2, 1, 0, -1, -2])
-  t.is(a.ElementAtOrDefault(0), 'hey')
-  t.is(b.ElementAtOrDefault(2), 0)
-  t.is(a.ElementAtOrDefault(4), undefined)
+  expect(a.ElementAtOrDefault(0)).toBe('hey')
+  expect(b.ElementAtOrDefault(2)).toBe(0)
+  expect(a.ElementAtOrDefault(4)).toBe(undefined)
 })
 
-test('Except', t => {
+test('Except', () => {
   const numbers1 = new List<number>([2.0, 2.1, 2.2, 2.3, 2.4, 2.5])
   const numbers2 = new List<number>([2.2, 2.3])
-  t.deepEqual(numbers1.Except(numbers2).ToArray(), [2, 2.1, 2.4, 2.5])
+  expect(numbers1.Except(numbers2).ToArray()).toStrictEqual([2, 2.1, 2.4, 2.5])
 })
 
-test('First', t => {
-  t.is(new List<string>(['hey', 'hola', 'que', 'tal']).First(), 'hey')
-  t.is(new List<number>([1, 2, 3, 4, 5]).First(x => x > 2), 3)
-  t.throws(
-    () => new List<string>().First(),
-    /InvalidOperationException: The source sequence is empty./
+test('First', () => {
+  expect(
+    new List<string>(['hey', 'hola', 'que', 'tal']).First()
+  ).toBe('hey')
+  expect(
+    new List<number>([1, 2, 3, 4, 5]).First(x => x > 2)
+  ).toBe(3)
+  expect(() => new List<string>().First()).toThrowError(
+    'The source sequence is empty'
   )
 })
 
-test('FirstOrDefault', t => {
-  t.is(new List<string>(['hey', 'hola', 'que', 'tal']).FirstOrDefault(), 'hey')
-  t.is(new List<string>().FirstOrDefault(), undefined)
+test('FirstOrDefault', () => {
+  expect(
+    new List<string>(['hey', 'hola', 'que', 'tal']).FirstOrDefault()
+  ).toBe('hey')
+  expect(new List<string>().FirstOrDefault()).toBe(undefined)
 })
 
-test('ForEach', t => {
+test('ForEach', () => {
   const names = new List<string>(['Bruce', 'Alfred', 'Tim', 'Richard'])
   let test = ''
   names.ForEach((x, i) => (test += `${x} ${i} `))
-  t.is(test, 'Bruce 0 Alfred 1 Tim 2 Richard 3 ')
+  expect(test).toBe('Bruce 0 Alfred 1 Tim 2 Richard 3 ')
 })
 
-test('GroupBy', t => {
+test('GroupBy', () => {
   const pets = new List<Pet>([
     new Pet({ Age: 8, Name: 'Barley' }),
     new Pet({ Age: 4, Name: 'Boots' }),
@@ -337,10 +343,15 @@ test('GroupBy', t => {
     '4': ['Boots', 'Daisy'],
     '8': ['Barley']
   }
-  t.deepEqual(pets.GroupBy(pet => pet.Age, pet => pet.Name), result)
+  expect(
+    pets.GroupBy(
+      pet => pet.Age,
+      pet => pet.Name
+    )
+  ).toStrictEqual(result)
 })
 
-test('GroupJoin', t => {
+test('GroupJoin', () => {
   const magnus = new Person({ Name: 'Hedlund, Magnus' })
   const terry = new Person({ Name: 'Adams, Terry' })
   const charlotte = new Person({ Name: 'Weiss, Charlotte' })
@@ -370,13 +381,12 @@ test('GroupJoin', t => {
     'Adams, Terry: Barley,Boots',
     'Weiss, Charlotte: Whiskers'
   ]
-  t.deepEqual(
-    query.Select(obj => `${obj.OwnerName}: ${obj.Pets.ToArray()}`).ToArray(),
-    expected
-  )
+  expect(
+    query.Select(obj => `${obj.OwnerName}: ${obj.Pets.ToArray()}`).ToArray()
+  ).toStrictEqual(expected)
 })
 
-test('IndexOf', t => {
+test('IndexOf', () => {
   const fruits = new List<string>([
     'apple',
     'banana',
@@ -391,12 +401,12 @@ test('IndexOf', t => {
   const whiskers = new Pet({ Age: 1, Name: 'Whiskers', Vaccinated: false })
   const pets = new List<Pet>([barley, boots, whiskers])
 
-  t.is(fruits.IndexOf('orange'), 3)
-  t.is(fruits.IndexOf('strawberry'), -1)
-  t.is(pets.IndexOf(boots), 1)
+  expect(fruits.IndexOf('orange')).toBe(3)
+  expect(fruits.IndexOf('strawberry')).toBe(-1)
+  expect(pets.IndexOf(boots)).toBe(1)
 })
 
-test('Insert', t => {
+test('Insert', () => {
   const pets = new List<Pet>([
     new Pet({ Age: 10, Name: 'Barley' }),
     new Pet({ Age: 4, Name: 'Boots' }),
@@ -408,22 +418,21 @@ test('Insert', t => {
   pets.Insert(0, newPet)
   pets.Insert(pets.Count(), newPet)
 
-  t.is(pets.First(), newPet)
-  t.is(pets.Last(), newPet)
-  t.throws(() => pets.Insert(-1, newPet), /Index is out of range./)
-  t.throws(
-    () => pets.Insert(pets.Count() + 1, newPet),
-    /Index is out of range./
+  expect(pets.First()).toBe(newPet)
+  expect(pets.Last()).toBe(newPet)
+  expect(() => pets.Insert(-1, newPet)).toThrowError('Index is out of range')
+  expect(() => pets.Insert(pets.Count() + 1, newPet)).toThrowError(
+    'Index is out of range'
   )
 })
 
-test('Intersect', t => {
+test('Intersect', () => {
   const id1 = new List<number>([44, 26, 92, 30, 71, 38])
   const id2 = new List<number>([39, 59, 83, 47, 26, 4, 30])
-  t.is(id1.Intersect(id2).Sum(x => x), 56)
+  expect(id1.Intersect(id2).Sum(x => x)).toBe(56)
 })
 
-test('Join', t => {
+test('Join', () => {
   const magnus = new Person({ Name: 'Hedlund, Magnus' })
   const terry = new Person({ Name: 'Adams, Terry' })
   const charlotte = new Person({ Name: 'Weiss, Charlotte' })
@@ -451,90 +460,103 @@ test('Join', t => {
     'Adams, Terry - Boots',
     'Weiss, Charlotte - Whiskers'
   ]
-  t.deepEqual(
-    query.Select(obj => `${obj.OwnerName} - ${obj.Pet}`).ToArray(),
-    expected
+  expect(
+    query.Select(obj => `${obj.OwnerName} - ${obj.Pet}`).ToArray()
+  ).toStrictEqual(expected)
+})
+
+test('Last', () => {
+  expect(
+    new List<string>(['hey', 'hola', 'que', 'tal']).Last(),
+    'tal'
+  )
+  expect(
+    new List<number>([1, 2, 3, 4, 5]).Last(x => x > 2)
+  ).toBe(5)
+  expect(() => new List<string>().Last()).toThrowError(
+    'The source sequence is empty'
   )
 })
 
-test('Last', t => {
-  t.is(new List<string>(['hey', 'hola', 'que', 'tal']).Last(), 'tal')
-  t.is(new List<number>([1, 2, 3, 4, 5]).Last(x => x > 2), 5)
-  t.throws(
-    () => new List<string>().Last(),
-    /InvalidOperationException: The source sequence is empty./
+test('LastOrDefault', () => {
+  expect(
+    new List<string>(['hey', 'hola', 'que', 'tal']).LastOrDefault(),
+    'tal'
   )
+  expect(new List<string>().LastOrDefault(), undefined)
 })
 
-test('LastOrDefault', t => {
-  t.is(new List<string>(['hey', 'hola', 'que', 'tal']).LastOrDefault(), 'tal')
-  t.is(new List<string>().LastOrDefault(), undefined)
-})
-
-test('Max', t => {
+test('Max', () => {
   const people = new List<IPerson>([
     { Age: 15, Name: 'Cathy' },
     { Age: 25, Name: 'Alice' },
     { Age: 50, Name: 'Bob' }
   ])
-  t.is(people.Max(x => x.Age), 50)
-  t.is(new List<number>([1, 2, 3, 4, 5]).Max(), 5)
+  expect(people.Max(x => x.Age)).toBe(50)
+  expect(
+    new List<number>([1, 2, 3, 4, 5]).Max()
+  ).toBe(5)
 })
 
-test('Min', t => {
+test('Min', () => {
   const people = new List<IPerson>([
     { Age: 15, Name: 'Cathy' },
     { Age: 25, Name: 'Alice' },
     { Age: 50, Name: 'Bob' }
   ])
-  t.is(people.Min(x => x.Age), 15)
-  t.is(new List<number>([1, 2, 3, 4, 5]).Min(), 1)
+  expect(people.Min(x => x.Age)).toBe(15)
+  expect(
+    new List<number>([1, 2, 3, 4, 5]).Min()
+  ).toBe(1)
 })
 
-test('OfType', t => {
+test('OfType', () => {
   const pets = new List<Pet>([
     new Dog({ Age: 8, Name: 'Barley', Vaccinated: true }),
     new Pet({ Age: 1, Name: 'Whiskers', Vaccinated: false })
   ])
   const anyArray = new List<any>(['dogs', 'cats', 13, true])
 
-  t.is(anyArray.OfType(String).Count(), 2)
-  t.is(anyArray.OfType(Number).Count(), 1)
-  t.is(anyArray.OfType(Boolean).Count(), 1)
-  t.is(anyArray.OfType(Function).Count(), 0)
+  expect(anyArray.OfType(String).Count()).toBe(2)
+  expect(anyArray.OfType(Number).Count()).toBe(1)
+  expect(anyArray.OfType(Boolean).Count()).toBe(1)
+  expect(anyArray.OfType(Function).Count()).toBe(0)
 
-  t.is(pets.OfType(Dog).Count(), 1)
-  t.is(
+  expect(pets.OfType(Dog).Count()).toBe(1)
+  expect(
     pets
       .OfType<Dog>(Dog)
       .First()
-      .Speak(),
-    'Bark'
-  )
+      .Speak()
+  ).toBe('Bark')
 })
 
-test('OrderBy', t => {
+test('OrderBy', () => {
   const expected = [1, 2, 3, 4, 5, 6]
-  t.deepEqual(
-    new List<number>([4, 5, 6, 3, 2, 1]).OrderBy(x => x).ToArray(),
-    expected
-  )
-  t.deepEqual(
+  expect(
+    new List<number>([4, 5, 6, 3, 2, 1])
+      .OrderBy(x => x)
+      .ToArray()
+  ).toStrictEqual(expected)
+  expect(
     new List<string>(['Deutschland', 'Griechenland', 'Ägypten'])
-      .OrderBy(x => x, (a, b) => a.localeCompare(b))
-      .ToArray(),
-    ['Ägypten', 'Deutschland', 'Griechenland']
-  )
+      .OrderBy(
+        x => x,
+        (a, b) => a.localeCompare(b)
+      )
+      .ToArray()
+  ).toStrictEqual(['Ägypten', 'Deutschland', 'Griechenland'])
 })
 
-test('OrderByDescending', t => {
-  t.deepEqual(
-    new List<number>([4, 5, 6, 3, 2, 1]).OrderByDescending(x => x).ToArray(),
-    [6, 5, 4, 3, 2, 1]
-  )
+test('OrderByDescending', () => {
+  expect(
+    new List<number>([4, 5, 6, 3, 2, 1])
+      .OrderByDescending(x => x)
+      .ToArray()
+  ).toStrictEqual([6, 5, 4, 3, 2, 1])
 })
 
-test('ThenBy', t => {
+test('ThenBy', () => {
   const fruits = new List<string>([
     'grape',
     'passionfruit',
@@ -557,23 +579,23 @@ test('ThenBy', t => {
     'raspberry',
     'passionfruit'
   ]
-  t.deepEqual(
+  expect(
     fruits
       .OrderBy(fruit => fruit.length)
       .ThenBy(fruit => fruit)
-      .ToArray(),
-    expected
-  )
+      .ToArray()
+  ).toStrictEqual(expected)
   const expectedNums = [1, 2, 3, 4, 5, 6]
   // test omission of OrderBy
-  t.deepEqual(
-    new List<number>([4, 5, 6, 3, 2, 1]).ThenBy(x => x).ToArray(),
-    expectedNums
-  )
+  expect(
+    new List<number>([4, 5, 6, 3, 2, 1])
+      .ThenBy(x => x)
+      .ToArray()
+  ).toStrictEqual(expectedNums)
 })
 
 // see https://github.com/kutyel/linq.ts/issues/23
-test('ThenByMultiple', t => {
+test('ThenByMultiple', () => {
   let x = { a: 2, b: 1, c: 1 }
   let y = { a: 1, b: 2, c: 2 }
   let z = { a: 1, b: 1, c: 3 }
@@ -584,12 +606,12 @@ test('ThenByMultiple', t => {
     .ThenBy(u => u.c)
     .ToArray()
 
-  t.is(sorted[0], z)
-  t.is(sorted[1], y)
-  t.is(sorted[2], x)
+  expect(sorted[0]).toBe(z)
+  expect(sorted[1]).toBe(y)
+  expect(sorted[2]).toBe(x)
 })
 
-test('ThenByDescending', t => {
+test('ThenByDescending', () => {
   const fruits = new List<string>([
     'grape',
     'passionfruit',
@@ -613,20 +635,20 @@ test('ThenByDescending', t => {
     'blueberry',
     'passionfruit'
   ]
-  t.deepEqual(
+  expect(
     fruits
       .OrderBy(fruit => fruit.length)
       .ThenByDescending(fruit => fruit)
-      .ToArray(),
-    expected
-  )
-  t.deepEqual(
-    new List<number>([4, 5, 6, 3, 2, 1]).ThenByDescending(x => x).ToArray(),
-    [6, 5, 4, 3, 2, 1]
-  )
+      .ToArray()
+  ).toStrictEqual(expected)
+  expect(
+    new List<number>([4, 5, 6, 3, 2, 1])
+      .ThenByDescending(x => x)
+      .ToArray()
+  ).toStrictEqual([6, 5, 4, 3, 2, 1])
 })
 
-test('Remove', t => {
+test('Remove', () => {
   const fruits = new List<string>([
     'apple',
     'banana',
@@ -642,13 +664,13 @@ test('Remove', t => {
   const pets = new List<Pet>([barley, boots, whiskers])
   const lessPets = new List<Pet>([barley, whiskers])
 
-  t.true(fruits.Remove('orange'))
-  t.false(fruits.Remove('strawberry'))
-  t.true(pets.Remove(boots))
-  t.deepEqual(pets, lessPets)
+  expect(fruits.Remove('orange')).toBeTruthy()
+  expect(fruits.Remove('strawberry')).toBeFalsy()
+  expect(pets.Remove(boots)).toBeTruthy()
+  expect(pets).toStrictEqual(lessPets)
 })
 
-test('RemoveAll', t => {
+test('RemoveAll', () => {
   const dinosaurs = new List<string>([
     'Compsognathus',
     'Amargasaurus',
@@ -667,10 +689,12 @@ test('RemoveAll', t => {
     'Gallimimus',
     'Triceratops'
   ])
-  t.deepEqual(dinosaurs.RemoveAll(x => x.endsWith('saurus')), lessDinosaurs)
+  expect(dinosaurs.RemoveAll(x => x.endsWith('saurus'))).toStrictEqual(
+    lessDinosaurs
+  )
 })
 
-test('RemoveAt', t => {
+test('RemoveAt', () => {
   const dinosaurs = new List<string>([
     'Compsognathus',
     'Amargasaurus',
@@ -691,28 +715,26 @@ test('RemoveAt', t => {
     'Triceratops'
   ])
   dinosaurs.RemoveAt(3)
-  t.deepEqual(dinosaurs, lessDinosaurs)
+  expect(dinosaurs).toStrictEqual(lessDinosaurs)
 })
 
-test('Reverse', t => {
-  t.deepEqual(new List<number>([1, 2, 3, 4, 5]).Reverse().ToArray(), [
-    5,
-    4,
-    3,
-    2,
-    1
-  ])
+test('Reverse', () => {
+  expect(
+    new List<number>([1, 2, 3, 4, 5])
+      .Reverse()
+      .ToArray()
+  ).toStrictEqual([5, 4, 3, 2, 1])
 })
 
-test('Select', t => {
-  t.deepEqual(new List<number>([1, 2, 3]).Select(x => x * 2).ToArray(), [
-    2,
-    4,
-    6
-  ])
+test('Select', () => {
+  expect(
+    new List<number>([1, 2, 3])
+      .Select(x => x * 2)
+      .ToArray()
+  ).toStrictEqual([2, 4, 6])
 })
 
-test('SelectMany', t => {
+test('SelectMany', () => {
   const petOwners = new List<PetOwner>([
     new PetOwner(
       'Higa, Sidney',
@@ -731,16 +753,15 @@ test('SelectMany', t => {
     )
   ])
   const expected = ['Scruffy', 'Sam', 'Walker', 'Sugar', 'Scratches', 'Diesel']
-  t.deepEqual(
+  expect(
     petOwners
       .SelectMany(petOwner => petOwner.Pets)
       .Select(pet => pet.Name)
-      .ToArray(),
-    expected
-  )
+      .ToArray()
+  ).toStrictEqual(expected)
 })
 
-test('SequenceEqual', t => {
+test('SequenceEqual', () => {
   const pet1 = new Pet({ Age: 2, Name: 'Turbo' })
   const pet2 = new Pet({ Age: 8, Name: 'Peanut' })
 
@@ -749,120 +770,111 @@ test('SequenceEqual', t => {
   const pets2 = new List<Pet>([pet1, pet2])
   const pets3 = new List<Pet>([pet1])
 
-  t.true(pets1.SequenceEqual(pets2))
-  t.false(pets1.SequenceEqual(pets3))
+  expect(pets1.SequenceEqual(pets2)).toBeTruthy()
+  expect(pets1.SequenceEqual(pets3)).toBeFalsy()
 })
 
-test('Single', t => {
+test('Single', () => {
   const fruits1 = new List<string>()
   const fruits2 = new List<string>(['orange'])
   const fruits3 = new List<string>(['orange', 'apple'])
   const numbers1 = new List([1, 2, 3, 4, 5, 5])
-  t.is(fruits2.Single(), 'orange')
-  t.throws(
-    () => fruits1.Single(),
-    /The collection does not contain exactly one element./
+  expect(fruits2.Single(), 'orange')
+  expect(() => fruits1.Single()).toThrowError(
+    'The collection does not contain exactly one element'
   )
-  t.throws(
-    () => fruits3.Single(),
-    /The collection does not contain exactly one element./
+  expect(() => fruits3.Single()).toThrowError(
+    'The collection does not contain exactly one element'
   )
-  t.is(numbers1.Single(x => x === 1), 1)
-  t.throws(
-    () => numbers1.Single(x => x === 5),
-    /The collection does not contain exactly one element./
+  expect(numbers1.Single(x => x === 1)).toStrictEqual(1)
+  expect(() => numbers1.Single(x => x === 5)).toThrowError(
+    'The collection does not contain exactly one element'
   )
-  t.throws(
-    () => numbers1.Single(x => x > 5),
-    /The collection does not contain exactly one element./
+  expect(() => numbers1.Single(x => x > 5)).toThrowError(
+    'The collection does not contain exactly one element'
   )
 })
 
-test('SingleOrDefault', t => {
+test('SingleOrDefault', () => {
   const fruits1 = new List<string>()
   const fruits2 = new List<string>(['orange'])
   const fruits3 = new List<string>(['orange', 'apple'])
   const numbers1 = new List([1, 2, 3, 4, 5, 5])
-  t.is(fruits1.SingleOrDefault(), undefined)
-  t.is(fruits2.SingleOrDefault(), 'orange')
-  t.throws(
-    () => fruits3.SingleOrDefault(),
-    /The collection does not contain exactly one element./
+  expect(fruits1.SingleOrDefault(), undefined)
+  expect(fruits2.SingleOrDefault(), 'orange')
+  expect(() => fruits3.SingleOrDefault()).toThrowError(
+    'The collection does not contain exactly one element'
   )
-  t.is(numbers1.SingleOrDefault(x => x === 1), 1)
-  t.is(numbers1.SingleOrDefault(x => x > 5), undefined)
-  t.throws(
-    () => numbers1.SingleOrDefault(x => x === 5),
-    /The collection does not contain exactly one element./
+  expect(numbers1.SingleOrDefault(x => x === 1)).toStrictEqual(1)
+  expect(numbers1.SingleOrDefault(x => x > 5)).toStrictEqual(undefined)
+  expect(() => numbers1.SingleOrDefault(x => x === 5)).toThrowError(
+    'The collection does not contain exactly one element'
   )
 })
 
-test('Skip', t => {
+test('Skip', () => {
   const grades = new List<number>([59, 82, 70, 56, 92, 98, 85])
-  t.deepEqual(
+  expect(
     grades
       .OrderByDescending(x => x)
       .Skip(3)
-      .ToArray(),
-    [82, 70, 59, 56]
-  )
+      .ToArray()
+  ).toStrictEqual([82, 70, 59, 56])
 })
 
-test('SkipLast', t => {
+test('SkipLast', () => {
   const grades = new List<number>([59, 82, 70, 56, 92, 98, 85])
-  t.deepEqual(
+  expect(
     grades
       .OrderByDescending(x => x)
       .SkipLast(3)
-      .ToArray(),
-    [98, 92, 85, 82]
-  )
+      .ToArray()
+  ).toStrictEqual([98, 92, 85, 82])
 })
 
-test('SkipWhile', t => {
+test('SkipWhile', () => {
   const grades = new List<number>([59, 82, 70, 56, 92, 98, 85])
-  t.deepEqual(
+  expect(
     grades
       .OrderByDescending(x => x)
       .SkipWhile(grade => grade >= 80)
-      .ToArray(),
-    [70, 59, 56]
-  )
+      .ToArray()
+  ).toStrictEqual([70, 59, 56])
 })
 
-test('Sum', t => {
+test('Sum', () => {
   const people = new List<IPerson>([
     { Age: 15, Name: 'Cathy' },
     { Age: 25, Name: 'Alice' },
     { Age: 50, Name: 'Bob' }
   ])
-  t.is(new List<number>([2, 3, 5]).Sum(), 10)
-  t.is(people.Sum(x => x.Age), 90)
+  expect(
+    new List<number>([2, 3, 5]).Sum()
+  ).toBe(10)
+  expect(people.Sum(x => x.Age)).toBe(90)
 })
 
-test('Take', t => {
+test('Take', () => {
   const grades = new List<number>([59, 82, 70, 56, 92, 98, 85])
-  t.deepEqual(
+  expect(
     grades
       .OrderByDescending(x => x)
       .Take(3)
-      .ToArray(),
-    [98, 92, 85]
-  )
+      .ToArray()
+  ).toStrictEqual([98, 92, 85])
 })
 
-test('TakeLast', t => {
+test('TakeLast', () => {
   const grades = new List<number>([59, 82, 70, 56, 92, 98, 85])
-  t.deepEqual(
+  expect(
     grades
       .OrderByDescending(x => x)
       .TakeLast(3)
-      .ToArray(),
-    [70, 59, 56]
-  )
+      .ToArray()
+  ).toStrictEqual([70, 59, 56])
 })
 
-test('TakeWhile', t => {
+test('TakeWhile', () => {
   const expected = ['apple', 'banana', 'mango']
   const fruits = new List<string>([
     'apple',
@@ -872,37 +884,48 @@ test('TakeWhile', t => {
     'passionfruit',
     'grape'
   ])
-  t.deepEqual(fruits.TakeWhile(fruit => fruit !== 'orange').ToArray(), expected)
+  expect(fruits.TakeWhile(fruit => fruit !== 'orange').ToArray()).toStrictEqual(
+    expected
+  )
 })
 
-test('ToArray', t => {
-  t.deepEqual(new List<number>([1, 2, 3, 4, 5]).ToArray(), [1, 2, 3, 4, 5])
+test('ToArray', () => {
+  expect(
+    new List<number>([1, 2, 3, 4, 5]).ToArray()
+  ).toStrictEqual([1, 2, 3, 4, 5])
 })
 
-test('ToDictionary', t => {
+test('ToDictionary', () => {
   const people = new List<IPerson>([
     { Age: 15, Name: 'Cathy' },
     { Age: 25, Name: 'Alice' },
     { Age: 50, Name: 'Bob' }
   ])
   const dictionary = people.ToDictionary(x => x.Name)
-  t.deepEqual(dictionary['Bob'], { Age: 50, Name: 'Bob' })
-  t.is(dictionary['Bob'].Age, 50)
-  const dictionary2 = people.ToDictionary(x => x.Name, y => y.Age)
-  t.is(dictionary2['Alice'], 25)
+  expect(dictionary['Bob']).toStrictEqual({ Age: 50, Name: 'Bob' })
+  expect(dictionary['Bob'].Age).toBe(50)
+  const dictionary2 = people.ToDictionary(
+    x => x.Name,
+    y => y.Age
+  )
+  expect(dictionary2['Alice']).toBe(25)
   // Dictionary should behave just like in C#
-  t.is(dictionary.Max(x => x.Value.Age), 50)
-  t.is(dictionary.Min(x => x.Value.Age), 15)
+  expect(dictionary.Max(x => x.Value.Age)).toBe(50)
+  expect(dictionary.Min(x => x.Value.Age)).toBe(15)
   const expectedKeys = new List(['Cathy', 'Alice', 'Bob'])
-  t.deepEqual(dictionary.Select(x => x.Key), expectedKeys)
-  t.deepEqual(dictionary.Select(x => x.Value), people)
+  expect(dictionary.Select(x => x.Key)).toStrictEqual(expectedKeys)
+  expect(dictionary.Select(x => x.Value)).toStrictEqual(people)
 })
 
-test('ToList', t => {
-  t.deepEqual(new List<number>([1, 2, 3]).ToList().ToArray(), [1, 2, 3])
+test('ToList', () => {
+  expect(
+    new List<number>([1, 2, 3])
+      .ToList()
+      .ToArray()
+  ).toStrictEqual([1, 2, 3])
 })
 
-test('ToLookup', t => {
+test('ToLookup', () => {
   // create a list of Packages
   const packages = new List<Package>([
     new Package({
@@ -945,18 +968,28 @@ test('ToLookup', t => {
     L: ['Lucerne Publishing 89112755'],
     W: ['Wingtip Toys 299456122', 'Wide World Importers 4665518773']
   }
-  t.deepEqual(lookup, result)
+  expect(lookup).toStrictEqual(result)
 })
 
-test('Union', t => {
+test('Union', () => {
   const ints1 = new List<number>([5, 3, 9, 7, 5, 9, 3, 7])
   const ints2 = new List<number>([8, 3, 6, 4, 4, 9, 1, 0])
-  t.deepEqual(ints1.Union(ints2).ToArray(), [5, 3, 9, 7, 8, 6, 4, 1, 0])
+  expect(ints1.Union(ints2).ToArray()).toStrictEqual([
+    5,
+    3,
+    9,
+    7,
+    8,
+    6,
+    4,
+    1,
+    0
+  ])
 
   const result = [
-    { Name: 'apple', Code: 9 },
-    { Name: 'orange', Code: 4 },
-    { Name: 'lemon', Code: 12 }
+    new Product({ Name: 'apple', Code: 9 }),
+    new Product({ Name: 'orange', Code: 4 }),
+    new Product({ Name: 'lemon', Code: 12 })
   ]
   const store1 = new List<Product>([
     new Product({ Name: 'apple', Code: 9 }),
@@ -966,10 +999,11 @@ test('Union', t => {
     new Product({ Name: 'apple', Code: 9 }),
     new Product({ Name: 'lemon', Code: 12 })
   ])
-  t.skip.deepEqual(store1.Union(store2).ToArray(), result)
+
+  expect(store1.Union(store2).ToArray()).toStrictEqual(result)
 })
 
-test('Where', t => {
+test('Where', () => {
   const fruits = new List<string>([
     'apple',
     'passionfruit',
@@ -981,39 +1015,37 @@ test('Where', t => {
     'strawberry'
   ])
   const expected = ['apple', 'mango', 'grape']
-  t.deepEqual(fruits.Where(fruit => fruit.length < 6).ToArray(), expected)
-})
-
-test('Zip', t => {
-  const numbers = new List<number>([1, 2, 3, 4])
-  const words = new List<string>(['one', 'two', 'three'])
-  t.deepEqual(
-    numbers.Zip(words, (first, second) => `${first} ${second}`).ToArray(),
-    ['1 one', '2 two', '3 three']
-  )
-  // larger second array
-  const expected = ['one 1', 'two 2', 'three 3']
-  const numbers2 = new List<number>([1, 2, 3, 4])
-  const words2 = new List<string>(['one', 'two', 'three'])
-  t.deepEqual(
-    words2.Zip(numbers2, (first, second) => `${first} ${second}`).ToArray(),
+  expect(fruits.Where(fruit => fruit.length < 6).ToArray()).toStrictEqual(
     expected
   )
 })
 
-test('Where().Select()', t => {
-  t.deepEqual(
+test('Zip', () => {
+  const numbers = new List<number>([1, 2, 3, 4])
+  const words = new List<string>(['one', 'two', 'three'])
+  expect(
+    numbers.Zip(words, (first, second) => `${first} ${second}`).ToArray()
+  ).toStrictEqual(['1 one', '2 two', '3 three'])
+  // larger second array
+  const expected = ['one 1', 'two 2', 'three 3']
+  const numbers2 = new List<number>([1, 2, 3, 4])
+  const words2 = new List<string>(['one', 'two', 'three'])
+  expect(
+    words2.Zip(numbers2, (first, second) => `${first} ${second}`).ToArray()
+  ).toStrictEqual(expected)
+})
+
+test('Where().Select()', () => {
+  expect(
     new List<number>([1, 2, 3, 4, 5])
       .Where(x => x > 3)
       .Select(y => y * 2)
-      .ToArray(),
-    [8, 10]
-  )
-  t.deepEqual(
+      .ToArray()
+  ).toStrictEqual([8, 10])
+  expect(
     new List<number>([1, 2, 3, 4, 5])
       .Where(x => x > 3)
       .Select(y => y + 'a')
-      .ToArray(),
-    ['4a', '5a']
-  )
+      .ToArray()
+  ).toStrictEqual(['4a', '5a'])
 })
